@@ -10,6 +10,7 @@ import os
 from PIL import Image, ImageDraw, ImageFont
 import argparse
 import netifaces as ni
+from gpiozero import InputDevice
 
 ########################################################
 
@@ -39,6 +40,7 @@ GPIO.setmode(GPIO.BCM) # Use processor pin numbering system
 ########################################################
 
 DHT_PIN = 4 # Set DATA pin
+RAIN_SENSOR_PIN = 18
 
 ########################################################
 
@@ -50,11 +52,17 @@ def read_temperature_and_humidity():
     humidity = '{0:0.1f}%'.format(h)
     return temperature_C, humidity
 
+def get_rain_status():
+    rain = InputDevice(RAIN_SENSOR_PIN)
+    if rain.is_active:
+        return "It's raining."
+    else:
+        return "It is not raining."
+
     
 def get_ip_addr():
     ip = ni.ifaddresses(INTERFACE)[ni.AF_INET][0]['addr']
     return ip
-
 
 
 if OLED_SCREEN_INSTALLED:
@@ -85,9 +93,12 @@ if OLED_SCREEN_INSTALLED:
         draw.line((0, 12, 127, 12), width=1, fill=255) # draw horizontal seperation line
 
         results = read_temperature_and_humidity()
+        rain_status = get_rain_status()
         draw.text((0, 14), " Temperature: "+ results[0], font=font, fill=255, align="right")
         draw.line((0, 26, 127, 26), width=1, fill=255) # draw horizontal seperation line
         draw.text((0, 28), "Humidity: "+ results[1], font=font, fill=255, align="right")
+        draw.line((0, 40, 127, 40), width=1, fill=255) # draw horizontal seperation line
+        draw.text((0, 42), rain_status, font=font, fill=255, align="right")
 
         ##################################################################
 
@@ -100,8 +111,9 @@ if OLED_SCREEN_INSTALLED:
 else:
     while True:
         result = read_temperature_and_humidity()
+        rain_status = get_rain_status()
         #Print Temperature and Humidity on Shell window
-        print('Temp={}*C  Humidity={}%'.format(result[0],result[1]))
+        print('Temp={}*C  Humidity={}%  {}'.format(result[0],result[1], rain_status))
         sleep(5) #Wait 5 seconds and read again
 
 
