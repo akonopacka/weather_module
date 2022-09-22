@@ -16,9 +16,11 @@ import netifaces as ni
 # Parse the command arguments
 parser = argparse.ArgumentParser(prog='weather_module', description='Weather module with OLED display')
 parser.add_argument('--OLED', help='Add if OLED screen is installed', action='store_true', default=False)
+parser.add_argument('--interface', type=str, default="eth0")
 
 args = parser.parse_args()
 OLED_SCREEN_INSTALLED = args.OLED
+INTERFACE = args.interface
 
 if OLED_SCREEN_INSTALLED:
     import adafruit_ssd1306
@@ -50,7 +52,7 @@ def read_temperature_and_humidity():
 
     
 def get_ip_addr():
-    ip = ni.ifaddresses('wlan0')[ni.AF_INET][0]['addr']
+    ip = ni.ifaddresses(INTERFACE)[ni.AF_INET][0]['addr']
     return ip
 
 
